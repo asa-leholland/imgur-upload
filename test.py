@@ -1,6 +1,7 @@
 import json
-from main import create_album, iterate_videos
+from main import create_album, iterate_through_vids
 import os
+
 
 def test_create_album():
     ALBUM_NAME = "Test album"
@@ -14,34 +15,10 @@ def test_create_album():
     assert json_response.get("data").get("deletehash") is not None
 
 
-
-def iterate_through_vids(directory, func):
-    for filename in os.listdir(directory):
-        if filename.endswith(".mp4") or filename.endswith(".avi") or filename.endswith(".webm"):
-            func(filename)
-        else:
-            continue
-
-
-# Pytest Skeletons
-
-# Test 1: Iterate through each video file provided
-
-
 def test_iterate_through_vids():
-    iterate_through_vids
-    # code to iterate through each video file here
-        # get a list of all the video files in the directory
-    video_list = os.listdir(directory)
-
-    # loop through the list and call func with each file
-    for video in video_list:
-        func(video)
-
-    # assert that func was called with every file
-    assert len(video_list) == func.call_count
-
-# Test 2: Upload each video file to Imgur
+    count = iterate_through_vids("samples", print)
+    video_list = os.listdir("samples")
+    assert len(video_list) == count
 
 
 def test_upload_to_imgur():
