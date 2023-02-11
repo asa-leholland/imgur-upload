@@ -1,5 +1,5 @@
 import json
-from main import create_album, iterate_through_vids
+from main import create_album, iterate_through_vids, upload_mp4_to_imgur
 import os
 
 
@@ -22,9 +22,15 @@ def test_iterate_through_vids():
 
 
 def test_upload_to_imgur():
-    # code to upload each video file to Imgur here
-    raise AssertionError
-# Test 3: Check response status codes to ensure successful video uploads
+    VIDEO_FILENAME = "samples/file_example_AVI_480_750kB.avi"
+    response = upload_mp4_to_imgur(VIDEO_FILENAME)
+    assert response.status_code == 200
+    json_response = json.loads(response.text)
+    assert json_response.get("success") is True
+    assert json_response.get("status") == 200
+    assert json_response.get("data").get("id") is not None
+    assert json_response.get("data").get("deletehash") is not None
+    assert json_response.get("data").get("link") is not None
 
 
 def test_check_response_status():
