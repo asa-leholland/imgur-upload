@@ -1,6 +1,8 @@
 import json
-from main import create_album, iterate_through_vids, upload_mp4_to_imgur
+from main import create_album, iterate_through_vids, upload_mp4_to_imgur, upload_video_to_album, write_string_list_to_csv, write_csv_to_excel
 import os
+import openpyxl
+from pathlib import Path
 
 
 def test_create_album():
@@ -33,30 +35,26 @@ def test_upload_to_imgur():
     assert json_response.get("data").get("link") is not None
 
 
-def test_check_response_status():
-    # code to check response status code here
-    raise AssertionError
-# Test 4: Copy-paste each URL to Excel
+def test_upload_to_album():
+    ALBUM_NAME = "Test an album with a video"
+    ALBUM_DESCRIPTION = "Test album description"
+    VIDEO_FILENAME = "samples/file_example_AVI_480_750kB.avi"
+    link_to_video_in_album = upload_video_to_album(ALBUM_NAME, ALBUM_DESCRIPTION, VIDEO_FILENAME)
+    assert '/a' in link_to_video_in_album
 
 
-def test_copy_paste_urls_to_excel():
-    # code to copy-paste each URL to Excel here
-    raise AssertionError
-# Test 5: Validate that each URL follows proper structure (https://imgur.com/a/)
+
+def test_add_to_excel():
+    strings = ['test1', 'test2', 'test3']
+    input_file_name = 'test_file.csv'
+    write_string_list_to_csv(strings, input_file_name)
+    excel_filename = write_csv_to_excel(input_file_name)
+    assert Path(excel_filename).is_file()
+    assert openpyxl.load_workbook(excel_filename).active.max_row == len(strings)
+    assert openpyxl.load_workbook(excel_filename).active['A1'].value == strings[0]
+    os.remove(input_file_name)
+    os.remove(excel_filename)
 
 
-def test_validate_url_structure():
-    # code to validate URL structure here
-    raise AssertionError
-# Test 6: Embed URLs into Reddit
 
-
-def test_embed_urls_into_reddit():
-    # code to embed URLs into Reddit here
-    raise AssertionError
-# Test 7: Verify videos successfully embedded in Reddit
-
-
-def test_verify_videos_embedded():
-    # code to verify videos are successfully embedded in Reddit here
-    raise AssertionError
+def test_end_to_end_excel_file():
