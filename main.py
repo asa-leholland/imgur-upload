@@ -34,8 +34,6 @@ def write_csv_to_excel(filename) -> str:
     wb.save(new_filename)
     return new_filename
 
-
-
 BASE_IMGUR_API_URL = 'https://api.imgur.com/3/'
 HEADERS = {'Authorization': 'Bearer 1496d3942360d35e663fe0ae248b3d117c154062'}
 
@@ -81,7 +79,7 @@ def upload_mp4_to_imgur(filepath: str, album_id: str = None):
 def iterate_through_vids(directory, func) -> int:
     count = 0
     for filename in os.listdir(directory):
-        if filename.endswith(".mp4") or filename.endswith(".avi") or filename.endswith(".mov") or filename.endswith(".ogg") or filename.endswith(".webm") or filename.endswith(".wmv"):
+        if filename.endswith(".mp4") or filename.endswith(".avi") or filename.endswith(".mov") or filename.endswith(".webm") or filename.endswith(".wmv"):
             func(filename)
             count += 1
         else:
@@ -106,18 +104,56 @@ def get_first_album_video_link(album_id: str):
 
 
 def get_album_link(album_id: str):
-    url = f'https://api.imgur.com/3/album/{album_id}'
-    response = requests.get(url, headers=HEADERS)
-    json_response = json.loads(response.text)
-    return json_response['data'].get('link')
-
+    return f'https://imgur.com/a/{album_id}'
 
 def upload_video_to_album(album_name: str, album_description: str, video_filename: str):
+    print(f'Uploading {video_filename} to album {album_name}...')
     response = create_album(album_name, album_description)
     album_json_response = json.loads(response.text)
     album_id = album_json_response.get("data").get("id")
+    print(f'Album created with id {album_id}.')
     response = upload_mp4_to_imgur(video_filename)
+    print(response)
     video_json_response = json.loads(response.text)
     video_id = video_json_response.get("data").get("id")
+    print(f'Video uploaded with id {video_id}.')
     attach_vid_to_album(video_id, album_id)
+    print(f'Video attached to album.')
     return get_album_link(album_id)
+
+
+def strip_extension(filename: str) -> str:
+    return filename[:filename.rfind('.')] if '.' in filename else filename
+
+
+def build_excel_file_of_imgur_album_links(video_directory: str, output_filename: str) -> str:
+    url_strings = []
+    iterate_through_vids(
+        video_directory,
+        lambda filename: url_strings.append(
+            upload_video_to_album(
+                f'Album for {strip_extension(filename)}',
+                'N/A',
+                f'{video_directory}/{filename}',
+            )
+        ),
+    )
+    csv_filename = f'{output_filename}.csv'
+    write_string_list_to_csv(url_strings, csv_filename)
+    return write_csv_to_excel(csv_filename)
+
+
+def delete_album(album_id: str):
+    url = f"https://api.imgur.com/3/album/{album_id}"
+    return requests.delete(url, headers=HEADERS)
+
+
+def get_all_album_ids():
+    url = f"https://api.imgur.com/3/account/me/albums/ids"
+    response = requests.get(url, headers=HEADERS).json()
+    return response['data']
+
+def delete_all_albums():
+    album_ids = get_all_album_ids()
+    for album_id in album_ids:
+        delete_album(album_id)

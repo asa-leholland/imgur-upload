@@ -1,9 +1,13 @@
 import json
-from main import create_album, iterate_through_vids, upload_mp4_to_imgur, upload_video_to_album, write_string_list_to_csv, write_csv_to_excel
 import os
-import openpyxl
 from pathlib import Path
 
+import openpyxl
+
+from main import (build_excel_file_of_imgur_album_links, create_album,
+                  delete_all_albums, iterate_through_vids, upload_mp4_to_imgur,
+                  upload_video_to_album, write_csv_to_excel,
+                  write_string_list_to_csv)
 
 def test_create_album():
     ALBUM_NAME = "Test album"
@@ -43,7 +47,6 @@ def test_upload_to_album():
     assert '/a' in link_to_video_in_album
 
 
-
 def test_add_to_excel():
     strings = ['test1', 'test2', 'test3']
     input_file_name = 'test_file.csv'
@@ -56,5 +59,11 @@ def test_add_to_excel():
     os.remove(excel_filename)
 
 
-
 def test_end_to_end_excel_file():
+    delete_all_albums()
+    excel_filename = build_excel_file_of_imgur_album_links("samples", "samples_test")
+    video_count = iterate_through_vids("samples", print)
+    assert Path(excel_filename).is_file()
+    assert openpyxl.load_workbook(excel_filename).active.max_row == video_count
+    assert openpyxl.load_workbook(excel_filename).active['A1'].value is not None
+    assert '/a/' in openpyxl.load_workbook(excel_filename).active['A1'].value
