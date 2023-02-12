@@ -157,3 +157,10 @@ def delete_all_albums():
     album_ids = get_all_album_ids()
     for album_id in album_ids:
         delete_album(album_id)
+
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) != 3:
+        print('Usage: python3 main.py <video_directory> <output_filename>')
+    build_excel_file_of_imgur_album_links(sys.argv[1], sys.argv[2])
